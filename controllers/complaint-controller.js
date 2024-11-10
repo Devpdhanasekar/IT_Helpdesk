@@ -1,6 +1,7 @@
 const Complaint = require("../models/Complaint");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const { getMessaging } = require('firebase-admin/messaging')
 
 // Function to add a complaint
 const addComplaint = async (req, res) => {
