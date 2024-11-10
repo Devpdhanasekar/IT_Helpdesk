@@ -1,0 +1,8 @@
+# Ignore node_modules and other dependencies
+node_modules/
+
+# Ignore environment variable files
+.env
+
+# Ignore specific file paths like the Firebase service account JSON
+/path/to/it-helpdesk-89ecf-firebase-adminsdk-pr7iy-367b80712f.json
