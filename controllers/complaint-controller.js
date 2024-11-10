@@ -57,7 +57,9 @@ const addComplaint = async (req, res) => {
 
                         const notificationMessage = `New complaint from ${complaintFrom} regarding ${natureOfComplaint}`;
                         adminsToNotify.forEach(admin => {
-                            sendNotification(admin, notificationMessage);
+                            if (admin.fcmToken) {  // Check if admin has an fcmToken
+                                sendNotification(admin, notificationMessage);
+                            }
                         });
 
                         return res.status(200).json({ message: true, complaint: newComplaint });
@@ -232,6 +234,8 @@ const getAllComplaintsCompleted = async (req, res) => {
 };
 
 const sendNotification = async (user, notificationMessage) => {
+    console.log(user)
+    console.log("user")
     const receivedToken = user.fcmToken;
     const message = {
         notification: {
@@ -241,15 +245,15 @@ const sendNotification = async (user, notificationMessage) => {
         token: receivedToken
     }
     getMessaging().send(message).then((response) => {
-        res.status(200).json({
-            message: "Successfully sent message",
-            token: receivedToken,
-        });
+        // res.status(200).json({
+        //     message: "Successfully sent message",
+        //     token: receivedToken,
+        // });
         console.log("Successfully sent message:", response);
     })
         .catch((error) => {
-            res.status(400);
-            res.send(error);
+            // res.status(400);
+            // res.send(error);
             console.log("Error sending message:", error);
         });
 }
