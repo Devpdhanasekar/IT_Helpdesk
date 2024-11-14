@@ -111,7 +111,9 @@ const getComplaintsByUser = async (req, res) => {
                             descriptionOfComplaint: complaint.descriptionOfComplaint,
                             dateAndTimeOfComplaint: complaint.dateAndTimeOfComplaint,
                             location: complaint.location,
-                            assignedTo: complaint.assignedTo.userName,
+                            assignedTo: complaint.assignedTo && complaint.assignedTo.length > 0
+                                ? complaint.assignedTo.map(user => user.userName).join(", ")  // Join multiple assigned users
+                                : "Not assigned",  // Default if no assigned users
                             dateAndTimeOfResolution: complaint.dateAndTimeOfResolution,
                             status: complaint.status,
                             remarks: complaint.remarks,
@@ -133,6 +135,7 @@ const getComplaintsByUser = async (req, res) => {
         return res.status(500).json({ message: "Error fetching complaints", error });
     }
 };
+
 
 
 module.exports = addComplaint;
