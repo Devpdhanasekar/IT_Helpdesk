@@ -112,6 +112,7 @@ const getComplaintsByUser = async (req, res) => {
                             descriptionOfComplaint: complaint.descriptionOfComplaint,
                             dateAndTimeOfComplaint: complaint.dateAndTimeOfComplaint,
                             location: complaint.location,
+                            assignedTo: complaint.assignedTo.userName,
                             dateAndTimeOfResolution: complaint.dateAndTimeOfResolution,
                             status: complaint.status,
                             remarks: complaint.remarks,
