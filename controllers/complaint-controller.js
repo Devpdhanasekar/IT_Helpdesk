@@ -77,6 +77,63 @@ const addComplaint = async (req, res) => {
         return res.status(500).json({ message: "Error adding complaint", error });
     }
 };
+const getComplaintsByUser = async (req, res) => {
+    try {
+        const { token } = req.body;  // Token is expected in the request body
+
+        if (token) {
+            jwt.verify(token, "ITHelpdesk", async (err, decoded) => {
+                if (err) {
+                    return res.status(401).json({ message: "Invalid or expired token" });
+                } else {
+                    try {
+                        // Find the user from the decoded token
+                        const user = await User.findById(decoded.id);
+                        if (!user) {
+                            return res.status(404).json({ message: "User not found" });
+                        }
+
+                        // Find complaints where the user is either the complainant or assigned to the complaint
+                        const complaints = await Complaint.find({
+                            $or: [
+                                { complaintBy: user._id },        // Complaints made by the user
+                                { assignedTo: user._id }          // Complaints assigned to the user
+                            ]
+                        })
+                            .populate("complaintBy", "userName mobileNumber")
+                            .populate("assignedTo", "userName");
+
+                        // Map the complaints to return userName instead of ObjectIds
+                        const formattedComplaints = complaints.map(complaint => ({
+                            _id: complaint._id,
+                            complaintFrom: complaint.complaintFrom,
+                            complaintBy: complaint.complaintBy.userName, // Use userName instead of id
+                            natureOfComplaint: complaint.natureOfComplaint,
+                            descriptionOfComplaint: complaint.descriptionOfComplaint,
+                            dateAndTimeOfComplaint: complaint.dateAndTimeOfComplaint,
+                            location: complaint.location,
+                            dateAndTimeOfResolution: complaint.dateAndTimeOfResolution,
+                            status: complaint.status,
+                            remarks: complaint.remarks,
+                            mobileNumber: complaint.complaintBy.mobileNumber
+                        }));
+
+                        return res.status(200).json(formattedComplaints);  // Send the complaints to the client
+                    } catch (error) {
+                        console.error(error);
+                        return res.status(500).json({ message: "Error fetching complaints", error });
+                    }
+                }
+            });
+        } else {
+            return res.status(400).json({ message: "Token not provided" });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Error fetching complaints", error });
+    }
+};
+
 
 module.exports = addComplaint;
 
@@ -266,6 +323,7 @@ module.exports = {
     editComplaint,
     deleteComplaint,
     getAllComplaints,
+    getComplaintsByUser,
     updateComplaintStatusAndRemarks,
     getAllComplaintsCompleted
 };
