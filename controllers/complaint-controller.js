@@ -97,7 +97,6 @@ const getComplaintsByUser = async (req, res) => {
                         const complaints = await Complaint.find({
                             $or: [
                                 { complaintBy: user._id },        // Complaints made by the user
-                                { assignedTo: user._id }          // Complaints assigned to the user
                             ]
                         })
                             .populate("complaintBy", "userName mobileNumber")
