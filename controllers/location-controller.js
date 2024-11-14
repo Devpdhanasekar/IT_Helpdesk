@@ -63,12 +63,12 @@ exports.updateLocationById = async (req, res) => {
 };
 
 // Delete a location by ID
-exports.deleteLocationById = async (req, res) => {
-  const { id } = req.params;
+exports.deleteLocationByName = async (req, res) => {
+  const { name } = req.params;
 
   try {
-    const deletedLocation = await LocationName.findByIdAndDelete(id);
-    if (!deletedLocation) {
+    const deletedLocation = await LocationName.deleteOne({ location: name }); // Adjust field as needed
+    if (deletedLocation.deletedCount === 0) {
       return res.status(404).json({ message: 'Location not found' });
     }
 
@@ -77,6 +77,8 @@ exports.deleteLocationById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 exports.notificationTest = async (req, res) => {
   try {

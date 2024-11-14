@@ -1,5 +1,5 @@
 const express = require('express');
-const { createLocation, getAllLocations, getLocationById, updateLocationById, deleteLocationById, notificationTest } = require('../controllers/location-controller');
+const { createLocation, getAllLocations, getLocationById, updateLocationById, deleteLocationByName, notificationTest } = require('../controllers/location-controller');
 const locationRouter = express.Router();
 // const = require('../controllers/locationController'); // Adjust the path as necessary
 
@@ -16,7 +16,7 @@ locationRouter.get('/locations/:id', getLocationById);
 locationRouter.put('/locations/:id', updateLocationById);
 
 // Delete a location by ID
-locationRouter.delete('/locations/:id', deleteLocationById);
+locationRouter.delete('/locations/:name', deleteLocationByName);
 
 
 // Notification testing
