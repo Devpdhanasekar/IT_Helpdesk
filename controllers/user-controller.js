@@ -149,11 +149,33 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const deleteUserByEmail = async (req, res) => {
+  const { email } = req.body; // Assuming the email is sent in the request body
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    const user = await User.findOneAndDelete({ userName: email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ message: "User account deleted successfully.", user });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 
 
 module.exports = {
   loginUser,
   userSignup,
   validateToken,
-  getAllUsers
+  getAllUsers,
+  deleteUserByEmail
 }
