@@ -68,3 +68,29 @@ exports.deleteDepartment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// Controller function to delete a department by name
+exports.deleteDepartmentByName = async (req, res) => {
+    try {
+        const { deptName } = req.params; // Extract the name from the request parameters
+
+        if (!deptName) {
+            return res.status(400).json({ message: 'Department name is required' });
+        }
+
+        // Find and delete the department by name
+        const deletedDepartment = await Department.findOneAndDelete({ Department: deptName });
+
+        if (!deletedDepartment) {
+            return res.status(404).json({ message: 'Department not found' });
+        }
+
+        // Success response
+        res.status(200).json({
+            message: 'Department deleted successfully',
+            department: deletedDepartment,
+        });
+    } catch (error) {
+        console.error('Error deleting department:', error);
+        res.status(500).json({ message: 'An error occurred while deleting the department' });
+    }
+};

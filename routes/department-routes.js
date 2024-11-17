@@ -17,6 +17,6 @@ deptRouter.get('/:id', departmentController.getDepartmentById);
 deptRouter.put('/:id', departmentController.updateDepartment);
 
 // Delete a department by ID
-deptRouter.delete('/:id', departmentController.deleteDepartment);
+deptRouter.delete('/deleteDepament/:deptName', departmentController.deleteDepartmentByName);
 
 module.exports = deptRouter;
