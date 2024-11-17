@@ -28,7 +28,7 @@ const addComplaint = async (req, res) => {
                         }
 
                         // Find all "LAdmin" users with the same location
-                        let assignedToUsers = await User.find({ role: "LAdmin", location: user.location }).select('_id');
+                        let assignedToUsers = await User.find({ role: "LocationAdmin", location: user.location }).select('_id');
                         const superAdmin = await User.findOne({ role: "SuperAdmin" });
 
                         // If no LAdmin in the location, default to SuperAdmin
@@ -52,7 +52,7 @@ const addComplaint = async (req, res) => {
                         // Update each assigned admin's received tickets
                         await User.updateMany({ _id: { $in: assignedTo } }, { $push: { receivedTickets: newComplaint._id } });
                         // Send notifications to all LAdmin users in the same location and SuperAdmin
-                        const allLAdmins = await User.find({ role: "LAdmin", location: user.location });
+                        const allLAdmins = await User.find({ role: "LocationAdmin", location: user.location });
                         const adminsToNotify = superAdmin ? [superAdmin, ...allLAdmins] : allLAdmins;
 
                         const notificationMessage = `New complaint from ${complaintFrom} regarding ${natureOfComplaint}`;
@@ -77,6 +77,63 @@ const addComplaint = async (req, res) => {
         return res.status(500).json({ message: "Error adding complaint", error });
     }
 };
+
+
+const getReceivedTickets = async (req, res) => {
+    try {
+        const { token } = req.body; // Token is expected in the request body
+
+        if (!token) {
+            return res.status(400).json({ message: "Token not provided" });
+        }
+
+        jwt.verify(token, "ITHelpdesk", async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ message: "Invalid or expired token" });
+            }
+
+            try {
+                // Find the user based on the decoded token
+                const user = await User.findById(decoded.id).populate({
+                    path: 'receivedTickets',
+                    populate: [
+                        { path: 'complaintBy', select: 'userName mobileNumber' },
+                        { path: 'assignedTo', select: 'userName' },
+                    ],
+                });
+
+                if (!user) {
+                    return res.status(404).json({ message: "User not found" });
+                }
+
+                // Format the received tickets for a clean response
+                const formattedTickets = user.receivedTickets.map(ticket => ({
+                    _id: ticket._id,
+                    complaintFrom: ticket.complaintFrom,
+                    complaintBy: ticket.complaintBy?.userName || "N/A",
+                    mobileNumber: ticket.complaintBy?.mobileNumber || "N/A",
+                    natureOfComplaint: ticket.natureOfComplaint,
+                    descriptionOfComplaint: ticket.descriptionOfComplaint,
+                    dateAndTimeOfComplaint: ticket.dateAndTimeOfComplaint,
+                    location: ticket.location,
+                    assignedTo: ticket.assignedTo?.map(user => user.userName).join(", ") || "Not assigned",
+                    dateAndTimeOfResolution: ticket.dateAndTimeOfResolution,
+                    status: ticket.status,
+                    remarks: ticket.remarks,
+                }));
+
+                return res.status(200).json(formattedTickets); // Send the tickets to the client
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Error fetching received tickets", error });
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Error processing the request", error });
+    }
+};
+
 const getComplaintsByUser = async (req, res) => {
     try {
         const { token } = req.body;  // Token is expected in the request body
@@ -328,5 +385,6 @@ module.exports = {
     getAllComplaints,
     getComplaintsByUser,
     updateComplaintStatusAndRemarks,
-    getAllComplaintsCompleted
+    getAllComplaintsCompleted,
+    getReceivedTickets
 };
